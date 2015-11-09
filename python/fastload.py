@@ -17,7 +17,7 @@ class FastLoad(gdb.Command):
 
     def invoke(self, argument, from_tty):
         if self._loader:
-            print 'Already running.'
+            print('Already running.')
             return
         libdir = feninit.default.libdir \
                 if hasattr(feninit.default, 'libdir') else None
@@ -65,7 +65,7 @@ class FastLoad(gdb.Command):
         sys.__stdout__.write('Loading symbols... ')
         sys.__stdout__.flush()
         gdb.execute('sharedlibrary', False, True)
-        print 'Done'
+        print('Done')
 
     def exit_handler(self, event):
         gdb.events.cont.disconnect(self.cont_handler)
@@ -76,7 +76,7 @@ class FastLoad(gdb.Command):
             sys.__stdout__.write('Waiting for libraries from device... ')
             sys.__stdout__.flush()
             self._loader.join()
-            print 'Done'
+            print('Done')
         self._loader = None
 
     class Loader(threading.Thread):

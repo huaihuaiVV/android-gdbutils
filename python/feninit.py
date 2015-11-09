@@ -41,19 +41,19 @@ class FenInit(gdb.Command):
                             self.gdbserver_port
             jdwp_set = hasattr(self, 'jdwp_port') and self.jdwp_port
             if not gdbserver_set or not jdwp_set:
-                print '\n********'
-                print '* Pro-tip: you seem to be forwarding ADB through SSH'
+                print('\n********')
+                print('* Pro-tip: you seem to be forwarding ADB through SSH')
                 if not gdbserver_set:
-                    print '* configure gdbserver_port in gdbinit.local to set the ' \
-                          'forwarding port for gdb debugging'
+                    print('* configure gdbserver_port in gdbinit.local to set the ' \
+                          'forwarding port for gdb debugging')
                 if not jdwp_set:
-                    print '* configure jdwp_port in gdbinit.local to set the ' \
-                          'forwarding port for jdb debugging'
-                print '********'
-        print '\nFennec GDB utilities'
-        print '  (see utils/gdbinit and utils/gdbinit.local on how to configure settings)'
+                    print('* configure jdwp_port in gdbinit.local to set the ' \
+                          'forwarding port for jdb debugging')
+                print('********')
+        print('\nFennec GDB utilities')
+        print('  (see utils/gdbinit and utils/gdbinit.local on how to configure settings)')
         for i in range(len(self.TASKS)):
-            print '%d. %s' % (i + 1, self.TASKS[i])
+            print('%d. %s' % (i + 1, self.TASKS[i]))
         task = 0
         while task < 1 or task > len(self.TASKS):
             task = readinput.call('Enter option from above: ', '-l',
@@ -68,12 +68,12 @@ class FenInit(gdb.Command):
                                self.TASKS)
             if len(matchTask) == 1:
                 task = self.TASKS.index(matchTask[0]) + 1
-        print ''
+        print('')
         return task - 1
 
     def _chooseDevice(self):
         dev = adb.chooseDevice()
-        print 'Using device %s' % dev
+        print('Using device %s' % dev)
         self.device = dev
 
     def _isObjDir(self, abspath):
@@ -115,7 +115,7 @@ class FenInit(gdb.Command):
                         os.path.expandvars(self.objdir)))
                 scanSrcDir(objdirs, objdir)
                 if not any((s.startswith(objdir) for s in objdirs)):
-                    print 'Preset object directory (%s) is invalid' % objdir
+                    print('Preset object directory (%s) is invalid' % objdir)
             else:
                 # self.objdir specifically set to not use objdir
                 objdir = None
@@ -123,13 +123,13 @@ class FenInit(gdb.Command):
         # let user choose even if only one objdir found,
         # because the user might want to not use an objdir
         while objdir not in objdirs:
-            print 'Choices for object directory to use:'
-            print '0. Do not use object directory'
+            print('Choices for object directory to use:')
+            print('0. Do not use object directory')
             for i in range(len(objdirs)):
-                print '%d. %s' % (i + 1, objdirs[i])
-            print 'Enter number from above or enter alternate path'
+                print('%d. %s' % (i + 1, objdirs[i]))
+            print('Enter number from above or enter alternate path')
             objdir = readinput.call(': ', '-d')
-            print ''
+            print('')
             if not objdir:
                 continue
             if objdir.isdigit() and int(objdir) >= 0 and \
@@ -148,7 +148,7 @@ class FenInit(gdb.Command):
             elif len(matchObjdir) == 1:
                 # only one match, good to go
                 objdir = matchObjdir[0]
-        print 'Using object directory: %s' % str(objdir)
+        print('Using object directory: %s' % str(objdir))
         self.objdir = objdir
 
     def _pullLibsAndSetPaths(self):
@@ -188,10 +188,10 @@ class FenInit(gdb.Command):
                 except gdb.GdbError:
                     sys.stdout.write('\n cannot pull %s... ' % lib)
                     sys.stdout.flush()
-            print 'Done'
+            print('Done')
 
         gdb.execute('set sysroot ' + libdir, False, True)
-        print 'Set sysroot to "%s".' % libdir
+        print('Set sysroot to "%s".' % libdir)
 
         searchPaths = [os.path.join(libdir, os.path.join(*d)) \
                 for d in DEFAULT_SEARCH_PATHS]
@@ -200,18 +200,18 @@ class FenInit(gdb.Command):
             searchPaths.append(os.path.join(self.objdir, 'dist', 'lib'))
         gdb.execute('set solib-search-path ' +
                 os.pathsep.join(searchPaths), False, True)
-        print 'Updated solib-search-path.'
+        print('Updated solib-search-path.')
 
         # Pass background hang monitor signal (assuming SIG36)
         gdb.execute('handle SIG36 nostop noprint pass', False, True)
-        print 'Ignoring BHM signal.'
+        print('Ignoring BHM signal.')
 
     def _extractApk(self, pkg, bindir, libdir):
         sys.stdout.write('Pulling apk for symbols... ')
         sys.stdout.flush()
         apk = self._getPackageApk(pkg)
         if not apk:
-            print 'Could not find apk.'
+            print('Could not find apk.')
             return
 
         def findSzip(path):
@@ -225,7 +225,7 @@ class FenInit(gdb.Command):
         szip = findSzip(os.path.join(bindir, 'szip')) or \
                findSzip('szip')
         if not szip:
-            print '*** Could not find szip tool ***'
+            print('*** Could not find szip tool ***')
             return
 
         import zipfile
@@ -234,7 +234,7 @@ class FenInit(gdb.Command):
             shutil.rmtree(appdir, ignore_errors=True)
         apppath = os.path.join(appdir, 'app.apk')
         adb.pull(apk, apppath)
-        print 'Done'
+        print('Done')
 
         sys.stdout.write('Extracting apk... ')
         sys.stdout.flush()
@@ -248,7 +248,7 @@ class FenInit(gdb.Command):
             apkzip.extractall(appdir)
         finally:
             apkzip.close()
-        print 'Done'
+        print('Done')
 
         sys.stdout.write('Un-szipping solibs... ')
         sys.stdout.flush()
@@ -260,10 +260,10 @@ class FenInit(gdb.Command):
                         stdout=devnull, stderr=devnull)
                     if root not in dirs:
                         dirs.append(root)
-        print 'Done'
+        print('Done')
 
         gdb.execute('set solib-search-path ' + os.pathsep.join(dirs), False, True)
-        print 'Updated solib-search-path'
+        print('Updated solib-search-path')
 
     def _getPackageApk(self, pkg):
         devpkgs = adb.call(['shell', 'pm', 'list', 'packages', '-f'])
@@ -292,8 +292,8 @@ class FenInit(gdb.Command):
             if f.lower().startswith(apkprefix) and f.lower().endswith('.apk'):
                 apks.append(os.path.join(distdir, f))
         if not apks:
-            print '*** Did not find an APK file in your object  ***'
-            print '*** directory; did you choose the right one? ***'
+            print('*** Did not find an APK file in your object  ***')
+            print('*** directory; did you choose the right one? ***')
             return True
         apks.sort(key=lambda f: os.path.getmtime(f))
         apk = apks[-1]
@@ -314,10 +314,10 @@ class FenInit(gdb.Command):
                     return True
 
             if devapk:
-                print 'Package %s does not seem to match file %s.' % \
-                        (pkg, os.path.basename(apk))
+                print('Package %s does not seem to match file %s.' % \
+                        (pkg, os.path.basename(apk)))
             else:
-                print 'Package %s does not seem to exist.' % pkg
+                print('Package %s does not seem to exist.' % pkg)
             ans = None
             while not ans or (ans[0] != 'y' and ans[0] != 'Y' and
                               ans[0] != 'n' and ans[0] != 'N'):
@@ -333,7 +333,7 @@ class FenInit(gdb.Command):
             adbout = [f for f in adbout if f.strip()]
             if not adbout:
                 adbout = ['No output?!']
-            print adbout[-1]
+            print(adbout[-1])
             if 'success' in adbout[-1].lower():
                 continue
 
@@ -356,7 +356,7 @@ class FenInit(gdb.Command):
             adbout = [f for f in adbout if f.strip()]
             if not adbout:
                 adbout = ['No output?!']
-            print adbout[-1]
+            print(adbout[-1])
 
     def _getAppName(self, objdir):
         try:
@@ -393,7 +393,7 @@ class FenInit(gdb.Command):
                             if webapppkg in p or webapppkg2 in p])
                     if len(pkgs) < 2:
                         acfile.close()
-                        print 'Using package %s.' % pkgs[0]
+                        print('Using package %s.' % pkgs[0])
                         return pkgs[0]
                 acfile.close()
             except IOError:
@@ -403,9 +403,9 @@ class FenInit(gdb.Command):
                 adb.call(['shell', 'pm', 'list', 'packages']).splitlines() \
                 if ':org.mozilla.' in x]
         if pkgs:
-            print 'Found package names:'
+            print('Found package names:')
             for pkg in pkgs:
-                print ' ' + pkg
+                print(' ' + pkg)
         else:
             pkgs = ['org.mozilla.fennec_unofficial', 'org.mozilla.fennec',
                     'org.mozilla.aurora', 'org.mozilla.firefox']
@@ -413,7 +413,7 @@ class FenInit(gdb.Command):
         while not pkg:
             pkg = readinput.call(
                 'Use package (e.g. org.mozilla.fennec): ', '-l', str(pkgs))
-        print ''
+        print('')
         return pkg
 
     def _getRunningProcs(self, pkg, waiting=False):
@@ -450,13 +450,13 @@ class FenInit(gdb.Command):
         if not pkgProcs:
             return
         for p in pkgProcs:
-            print p
+            print(p)
         raise gdb.GdbError(
             'Could not kill running %s process.' % pkg)
 
     def _chooseEnvVars(self):
-        print 'Enter environmental variables and arguments'
-        print '    e.g. NSPR_LOG_MODULES=all:5 www.mozilla.org -profile <dir>'
+        print('Enter environmental variables and arguments')
+        print('    e.g. NSPR_LOG_MODULES=all:5 www.mozilla.org -profile <dir>')
         cmd = readinput.call(': ')
         env, cmd, args = self.parseCommand(cmd,
             self.env if hasattr(self, 'env') and self.env else None,
@@ -491,8 +491,8 @@ class FenInit(gdb.Command):
         out = adb.call(args + extraArgs)
         self.amExtraArgs = extraArgs
         if 'error' in out.lower():
-            print ''
-            print out
+            print('')
+            print(out)
             raise gdb.GdbError('Error while launching %s.' % pkg)
 
     def _linkJavaSources(self, srcdir, objdir):
@@ -568,7 +568,7 @@ class FenInit(gdb.Command):
         # wait for parent launch to complete
         while all([CHILD_EXECUTABLE in x for x in pkgProcs]):
             pkgProcs = self._getRunningProcs(pkg, waiting=True)
-        print 'Done'
+        print('Done')
 
         # get parent/child(ren) pid's
         pidParent = next((next((col for col in x.split() if col.isdigit()))
@@ -606,17 +606,17 @@ class FenInit(gdb.Command):
             objdir = self.objdir
             srcdir = self._getTopSrcDir(objdir)
             if objdir and srcdir:
-                print 'Creating source path links...'
+                print('Creating source path links...')
                 linkdir = self._linkJavaSources(srcdir, objdir)
-            print 'Starting jdb for pid %s... ' % pidChildParent
+            print('Starting jdb for pid %s... ' % pidChildParent)
             with open(os.devnull,"w") as devnull:
                 if subprocess.call(['which', 'jdb'], stdout=devnull) != 0:
-                    print 'jdb not found. Please install jdb.'
+                    print('jdb not found. Please install jdb.')
                     return
             jdwp = adb.call(['jdwp']).splitlines()
             if pidChildParent not in jdwp:
-                print ('%s process (%s) does not support jdwp.' %
-                    (pkg, pidChildParent))
+                print(('%s process (%s) does not support jdwp.' %
+                    (pkg, pidChildParent)))
                 return
             jdwp_port = str(self.jdwp_port if hasattr(self, 'jdwp_port')
                                            else (0x8000 | int(pidChildParent)))
@@ -632,7 +632,7 @@ class FenInit(gdb.Command):
             # ok, no child is available. assume the user
             # wants to wait for child to start up
             pkgProcs = []
-            print 'Waiting for child process...'
+            print('Waiting for child process...')
             while not any(pidChildParent in x and
                           CHILD_EXECUTABLE in x for x in pkgProcs):
                 pkgProcs = self._getRunningProcs(pkg, waiting=True)
@@ -650,9 +650,9 @@ class FenInit(gdb.Command):
             # should not happen for now, because we only use one child
             pidAttach = None
             while pidAttach not in pidChild:
-                print 'WTF multiple child processes found:'
+                print('WTF multiple child processes found:')
                 for i in range(len(pidChild)):
-                    print '%d. pid %s' % (i + 1, pidChild[i])
+                    print('%d. pid %s' % (i + 1, pidChild[i]))
                 pidAttach = readinput.call('Child pid: ', '-l', str(pidChild))
                 if pidAttach.isdigit() and int(pidAttach) > 0 \
                         and int(pidAttach) <= len(pidChild):
@@ -668,7 +668,7 @@ class FenInit(gdb.Command):
                 (PARENT_FILE_PATH if pidParent else CHILD_FILE_PATH),
                 ['--once', '--attach', gdbserver_port, pidAttach])
 
-        print '\nReady. Use "continue" to resume execution.'
+        print('\nReady. Use "continue" to resume execution.')
 
     def _attachPid(self, pkg, pid):
         path = os.path.join(self.libdir,
@@ -682,7 +682,7 @@ class FenInit(gdb.Command):
                 path,
                 ['--once', '--attach', gdbserver_port, pid])
 
-        print '\nReady. Use "continue" to resume execution.'
+        print('\nReady. Use "continue" to resume execution.')
 
     def _attachGDBServer(self, pkg, filePath, args,
                          skipShell = False, redirectOut = False):
@@ -793,34 +793,34 @@ class FenInit(gdb.Command):
                 intentPid = gdbserverAmOut[0][2:7]
 
         if not gdbserverProc:
-            print ''
+            print('')
             if gdbserverRootOut:
-                print '"gdbserver" output:'
-                print ' ' + '\n '.join([s for s in gdbserverRootOut
-                                        if s]).replace('\0', '')
-            print '"run-as" output:'
-            print ' ' + '\n '.join([s for s in gdbserverRunAsOut
-                                    if s]).replace('\0', '')
-            print '"run-as pkg" output:'
-            print ' ' + '\n '.join([s for s in gdbserverPkgRunAsOut
-                                    if s]).replace('\0', '')
-            print '"su -c" output:'
-            print ' ' + '\n '.join([s for s in gdbserverSuOut
-                                    if s]).replace('\0', '')
-            print '"su -c pkg" output:'
-            print ' ' + '\n '.join([s for s in gdbserverPkgSuOut
-                                    if s]).replace('\0', '')
-            print '"am start" output:'
-            print ' ' + '\n '.join([s for s in gdbserverAmOut
-                                    if s]).replace('\0', '')
+                print('"gdbserver" output:')
+                print(' ' + '\n '.join([s for s in gdbserverRootOut
+                                        if s]).replace('\0', ''))
+            print('"run-as" output:')
+            print(' ' + '\n '.join([s for s in gdbserverRunAsOut
+                                    if s]).replace('\0', ''))
+            print('"run-as pkg" output:')
+            print(' ' + '\n '.join([s for s in gdbserverPkgRunAsOut
+                                    if s]).replace('\0', ''))
+            print('"su -c" output:')
+            print(' ' + '\n '.join([s for s in gdbserverSuOut
+                                    if s]).replace('\0', ''))
+            print('"su -c pkg" output:')
+            print(' ' + '\n '.join([s for s in gdbserverPkgSuOut
+                                    if s]).replace('\0', ''))
+            print('"am start" output:')
+            print(' ' + '\n '.join([s for s in gdbserverAmOut
+                                    if s]).replace('\0', ''))
             if any('not executable: magic' in s for s in (
                     gdbserverRootOut + gdbserverRunAsOut + gdbserverPkgRunAsOut
                     + gdbserverSuOut + gdbserverPkgSuOut + gdbserverAmOut)):
-                print '\n********'
-                print '* Your device platform is not supported by this GDB'
-                print '* Use jimdb-x86 for x86 targets/devices'
-                print '* Use jimdb-arm for ARM targets/devices'
-                print '********\n'
+                print('\n********')
+                print('* Your device platform is not supported by this GDB')
+                print('* Use jimdb-x86 for x86 targets/devices')
+                print('* Use jimdb-arm for ARM targets/devices')
+                print('********\n')
             raise gdb.GdbError('failed to run gdbserver')
 
         self.port = port
@@ -851,14 +851,14 @@ class FenInit(gdb.Command):
 
         # forward the port that gdbserver gave us
         adb.forward('tcp:' + port, 'tcp:' + port)
-        print 'Done'
+        print('Done')
 
         sys.stdout.write('Setting up remote debugging... ')
         sys.stdout.flush()
         # load the right file
         gdb.execute('file ' + filePath, False, True)
         gdb.execute('target remote :' + port, False, True)
-        print 'Done'
+        print('Done')
 
     # returns (env, cmd, args)
     def parseCommand(self, cmd, extra_env=None, extra_args=None, has_cmd=True):
@@ -871,7 +871,7 @@ class FenInit(gdb.Command):
             if extra_args:
                 comps += shlex.split(extra_args)
         except ValueError as e:
-            print str(e)
+            print(str(e))
             return ([], '', [])
         comps = [os.path.expandvars(s) for s in comps]
         for i in range(len(comps)):
@@ -895,14 +895,14 @@ class FenInit(gdb.Command):
         testpath = (os.environ['TEST_PATH']
             if 'TEST_PATH' in os.environ else None)
         while not os.path.isfile(cpppath):
-            print 'Enter path of unit test ' \
-                  '(use tab-completion to see possibilities)'
+            print('Enter path of unit test ' \
+                  '(use tab-completion to see possibilities)')
             if self.objdir:
-                print '    path can be relative to $objdir/dist/bin or absolute'
-            print '    environmental variables and arguments are supported'
-            print '    e.g. FOO=bar TestFooBar arg1 arg2'
+                print('    path can be relative to $objdir/dist/bin or absolute')
+            print('    environmental variables and arguments are supported')
+            print('    e.g. FOO=bar TestFooBar arg1 arg2')
             if testpath:
-                print 'Leave empty to use TEST_PATH (%s)' % testpath
+                print('Leave empty to use TEST_PATH (%s)' % testpath)
             cpppath = readinput.call(': ', '-f', '-c', rootdir,
                            '--file-mode', '0o100',
                            '--file-mode-mask', '0o100')
@@ -912,7 +912,7 @@ class FenInit(gdb.Command):
                 if hasattr(self, 'cpp_env') and self.cpp_env else None)
             cpppath = os.path.normpath(os.path.join(rootdir,
                                        os.path.expanduser(cpppath)))
-            print ''
+            print('')
         self.cpppath = cpppath
         self.cppenv = self.quoteEnv(cppenv)
         self.cppargs = cppargs
@@ -930,7 +930,7 @@ class FenInit(gdb.Command):
         out = adb.call(['shell', 'am', 'start', '-n', pkg + '/.App',
                 '--es', 'env0', 'MOZ_LINKER_EXTRACT=1'])
         if 'error' in out.lower():
-            print '\n' + out
+            print('\n' + out)
             raise gdb.GdbError('Error while launching %s.' % pkg)
         else:
             pkgProcs = None
@@ -938,7 +938,7 @@ class FenInit(gdb.Command):
                 pkgProcs = self._getRunningProcs(pkg, waiting=True)
             # sleep for 2s to allow time to launch
             time.sleep(2)
-            print 'Done'
+            print('Done')
 
     def _attachCpp(self, pkg):
         cppPath = '/data/local/tmp/' + os.path.basename(self.cpppath)
@@ -976,7 +976,7 @@ class FenInit(gdb.Command):
         self._attachGDBServer(pkg, self.cpppath, gdbserver_args,
                               skipShell, True)
 
-        print '\nReady. Use "continue" to start execution.'
+        print('\nReady. Use "continue" to start execution.')
 
     def _getTopSrcDir(self, objdir):
         if objdir:
@@ -1006,17 +1006,17 @@ class FenInit(gdb.Command):
             if 'TEST_PATH' in os.environ else None)
         while not os.path.isfile(mochipath) and \
               not os.path.isdir(mochipath):
-            print 'Enter path of Mochitest (file or directory)'
-            print '    use tab-completion to see possibilities'
+            print('Enter path of Mochitest (file or directory)')
+            print('    use tab-completion to see possibilities')
             if topsrcdir:
-                print '    path can be relative to the ' \
-                      'source directory or absolute'
-            print '    Fennec environment variables and ' \
-                  'test harness arguments are supported'
-            print '    e.g. NSPR_LOG_MODULES=all:5 test_foo_bar.html ' \
-                  '--remote-webserver=0.0.0.0'
+                print('    path can be relative to the ' \
+                      'source directory or absolute')
+            print('    Fennec environment variables and ' \
+                  'test harness arguments are supported')
+            print('    e.g. NSPR_LOG_MODULES=all:5 test_foo_bar.html ' \
+                  '--remote-webserver=0.0.0.0')
             if testpath:
-                print 'Leave empty to use TEST_PATH (%s)' % testpath
+                print('Leave empty to use TEST_PATH (%s)' % testpath)
             mochipath = readinput.call(': ', '-f', '-c', rootdir,
                            '--file-mode', '0o000',
                            '--file-mode-mask', '0o100')
@@ -1029,7 +1029,7 @@ class FenInit(gdb.Command):
                     and self.mochi_args else None)
             mochipath = os.path.normpath(os.path.join(rootdir,
                                          os.path.expanduser(mochipath)))
-            print ''
+            print('')
         return (mochienv, mochipath, mochiargs)
 
     def _getXREDir(self, datadir):
@@ -1047,7 +1047,7 @@ class FenInit(gdb.Command):
                                  os.path.expanduser(self.mochi_xre)))
             if xredir:
                 return os.path.abspath(xredir)
-            print 'mochi_xre directory does not contain xpcshell'
+            print('mochi_xre directory does not contain xpcshell')
 
         xredatadir = os.path.abspath(
                      os.path.join(datadir, os.path.pardir, 'xre'))
@@ -1074,7 +1074,7 @@ class FenInit(gdb.Command):
                             ((time.time() - os.path.getmtime(xreupdate))
                                 / 60 / 60 / 24),
                             '-l', str(['yes', 'no']))
-                    print ''
+                    print('')
                     if ans[0] == 'y' or ans[0] == 'Y':
                         shutil.rmtree(xredatadir, ignore_errors=True)
                         getxre.call(xredatadir, self.mochi_xre_url
@@ -1083,10 +1083,10 @@ class FenInit(gdb.Command):
                     # update timestamp regardless of choice above
                     touchUpdate()
         while not xredir:
-            print 'Enter path of XRE directory containing xpcshell,'
-            print ' or leave blank to download from ftp.mozilla.org (~100MB)'
+            print('Enter path of XRE directory containing xpcshell,')
+            print(' or leave blank to download from ftp.mozilla.org (~100MB)')
             xredir = readinput.call(': ', '-d')
-            print ''
+            print('')
             if not xredir:
                 getxre.call(xredatadir, self.mochi_xre_url
                                         if hasattr(self, 'mochi_xre_url')
@@ -1158,7 +1158,7 @@ class FenInit(gdb.Command):
             exe.extend(args)
 
         # run this before exec() so child doesn't get gdb's signals
-        print 'Launching Mochitest... '
+        print('Launching Mochitest... ')
 
         # first kill off any running instance
         self._killRunningProcs(pkg)
@@ -1172,7 +1172,7 @@ class FenInit(gdb.Command):
 
         line = proc.stdout.readline()
         while line and proc.poll() == None:
-            print '\x1B[1mout> \x1B[22m' + line.strip()
+            print('\x1B[1mout> \x1B[22m' + line.strip())
             if 'INFO' in line and 'application pid' in line.lower():
                 time.sleep(2)
                 # test launched
@@ -1209,7 +1209,7 @@ class FenInit(gdb.Command):
         return proc
 
     def _choosePid(self):
-        print 'Enter PID'
+        print('Enter PID')
         return readinput.call(': ', '-d')
 
     def invoke(self, argument, from_tty):
@@ -1219,12 +1219,12 @@ class FenInit(gdb.Command):
             gdb.execute('set height 0') # suppress pagination
             if hasattr(self, 'gdbserver') and self.gdbserver:
                 if self.gdbserver.poll() is None:
-                    print 'Already in remote debug mode.'
+                    print('Already in remote debug mode.')
                     return
                 delattr(self, 'gdbserver')
             if hasattr(self, '_mochitest') and self._mochitest:
                 if self._mochitest.poll() is None:
-                    print 'Already in remote Mochitest mode.'
+                    print('Already in remote Mochitest mode.')
                     return
                 delattr(self, '_mochitest')
             self._task = self._chooseTask()
@@ -1276,12 +1276,12 @@ class FenInit(gdb.Command):
             if hasattr(self, 'gdbserver') and self.gdbserver:
                 if self.gdbserver.poll() is None:
                     self.gdbserver.terminate()
-                    print 'Terminated gdbserver.'
+                    print('Terminated gdbserver.')
                 delattr(self, 'gdbserver')
             if hasattr(self, '_mochitest') and self._mochitest:
                 if self._mochitest.poll() is None:
                     self._mochitest.terminate()
-                    print 'Terminated Mochitest.'
+                    print('Terminated Mochitest.')
                 delattr(self, '_mochitest')
             raise
         finally:

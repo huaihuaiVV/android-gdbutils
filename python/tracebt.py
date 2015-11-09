@@ -385,13 +385,13 @@ class TraceBT(gdb.Command):
             f = Frame(0, 0, False)
             newf = Frame(pc, sp, is_thumb, regs)
             while newf != f:
-                print '#{0}: {1}'.format(fid, str(newf))
+                print('#{0}: {1}'.format(fid, str(newf)))
                 f = newf
                 newf = f.unwind()
                 fid += 1
                 logLimiter.reset()
         except KeyboardInterrupt:
             raise gdb.GdbError("interrupted")
-        print 'no more reachable frames'
+        print('no more reachable frames')
 
 default = TraceBT()

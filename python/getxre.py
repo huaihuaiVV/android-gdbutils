@@ -16,7 +16,7 @@ if __name__ == '__main__': # not module
     (args, extras) = parser.parse_args()
 
     if not hasattr(args, 'd') or not args.d:
-        print 'missing required argument -d, the dst directory'
+        print('missing required argument -d, the dst directory')
         exit(1)
     xredir = args.d
     if not os.path.isdir(xredir):
@@ -31,7 +31,7 @@ if __name__ == '__main__': # not module
         binname = 'mac.dmg'
         testname = 'mac.tests.zip'
     else:
-        print 'Platform not supported.\n'
+        print('Platform not supported.\n')
         exit(1)
 
     def download(src, dst):
@@ -48,7 +48,7 @@ if __name__ == '__main__': # not module
                                  (bn, size[1] * 100 / size[2]))
                 sys.stdout.flush()
             ftp.retrbinary('RETR ' + src, write)
-        print '\rDownloading %s... Done' % bn
+        print('\rDownloading %s... Done' % bn)
 
     server = 'ftp.mozilla.org'
     sys.stdout.write('Connecting to %s... ' % server)
@@ -58,19 +58,19 @@ if __name__ == '__main__': # not module
         ftp.login()
         files = ftp.nlst(args.u if hasattr(args, 'u') and args.u else
                          '/pub/mozilla.org/firefox/nightly/latest-mozilla-aurora')
-        print 'Done'
+        print('Done')
 
         try:
             binsrc = next(f for f in files if binname in f)
         except StopIteration:
-            print 'Cannot find binary archive %s.' % binname
+            print('Cannot find binary archive %s.' % binname)
             exit(1)
         bindst = os.path.join(xredir, binsrc.split('/')[-1])
         download(binsrc, bindst)
         try:
             testsrc = next(f for f in files if testname in f)
         except StopIteration:
-            print 'Cannot find tests archive %s.' % testname
+            print('Cannot find tests archive %s.' % testname)
             exit(1)
         testdst = os.path.join(xredir, testsrc.split('/')[-1])
         download(testsrc, testdst)
@@ -101,10 +101,10 @@ if __name__ == '__main__': # not module
         finally:
             subprocess.check_output(['hdiutil', 'detach', dev])
     else:
-        print 'Platform not supported.\n'
+        print('Platform not supported.\n')
         exit(1)
     os.remove(bindst)
-    print 'Done'
+    print('Done')
     sys.stdout.write('Extracting %s... ' % os.path.basename(testdst))
     sys.stdout.flush()
     testzip = zipfile.ZipFile(testdst, 'r')
@@ -113,20 +113,20 @@ if __name__ == '__main__': # not module
                os.path.realpath(xredir))
                for f in testzip.namelist()):
             # extracted file will be outside of the destination directory
-            print 'Invalid zip file.\n'
+            print('Invalid zip file.\n')
             exit(1)
         testzip.extractall(xredir)
     finally:
         testzip.close()
     os.remove(testdst)
-    print 'Done'
+    print('Done')
     for binary_name in ['certutil', 'pk12util', 'xpcshell', 'ssltunnel']:
         binary_path = os.path.join(xredir, 'bin', binary_name)
         if os.path.isfile(binary_path):
             os.chmod(binary_path, 0o755)
         else:
             raise Exception('Cannot find required binary %s' % (binary_path))
-    print 'Downloaded XRE to ' + xredir
+    print('Downloaded XRE to ' + xredir)
 
 else:
 
@@ -140,7 +140,7 @@ else:
         try:
             proc = subprocess.Popen(cmd, stderr=subprocess.PIPE)
             out = proc.communicate()[1]
-        except OSError, e:
+        except (OSError, e):
             raise gdb.GdbError('cannot run getxre: ' + str(e))
         if proc.returncode != 0:
             raise gdb.GdbError('getxre returned exit code ' +

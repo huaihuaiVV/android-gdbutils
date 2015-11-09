@@ -155,7 +155,7 @@ else:
         try:
             proc = subprocess.Popen(cmd, stderr=subprocess.PIPE)
             out = proc.communicate()[1]
-        except OSError, e:
+        except (OSError, e):
             raise gdb.GdbError('cannot run readinput: ' + str(e))
         if proc.returncode != 0:
             raise gdb.GdbError('readinput returned exit code ' +

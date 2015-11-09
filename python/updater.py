@@ -49,13 +49,13 @@ class Updater(gdb.Command):
         if dirty:
             code, gitout = self._callGit(['stash', 'pop'], return_error=True)
             if code or 'CONFLICT' in gitout:
-                print gitout.strip()
-                print '\nPlease resolve git conflict and restart gdb.'
+                print(gitout.strip())
+                print('\nPlease resolve git conflict and restart gdb.')
                 gdb.execute('quit')
                 return
         if revbefore == revafter:
             return
-        print '\nUpdated successfully. Please restart gdb.'
+        print('\nUpdated successfully. Please restart gdb.')
         gdb.execute('quit')
 
     def invoke(self, argument, from_tty):

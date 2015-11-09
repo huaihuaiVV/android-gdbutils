@@ -4,8 +4,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # Load python utilities
-python import adbparams
-python import feninit, tracebt, fastload, adblog, updater
+# python import adbparams
+# python import feninit, tracebt, fastload, adblog, updater
 
 
 # To set preferences, look for lines starting with 'set' or 'python'

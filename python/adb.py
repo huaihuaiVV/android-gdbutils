@@ -53,24 +53,24 @@ def chooseDevice():
     # wait for a device if no device is found
     while not devs:
         try:
-            print 'ADB: waiting for device... (Ctrl+C to stop)'
+            print('ADB: waiting for device... (Ctrl+C to stop)')
             waitForDevice()
-        except gdb.GdbError, KeyboardInterrupt:
+        except gdb.GdbError:
             raise gdb.GdbError(' ADB: no device')
         devs = getDevices()
 
     # use saved setting if possible; also allows gdbinit to set device
     dev = str(gdb.parameter('adb-device'))
     if dev and dev not in devs:
-        print 'feninit.default.device (%s) is not connected' % dev
+        print('feninit.default.device (%s) is not connected' % dev)
     # use only device
     if len(devs) == 1:
         dev = devs[0]
     # otherwise, let user decide
     while not dev in devs:
-        print 'Found multiple devices:'
+        print('Found multiple devices:')
         for i in range(len(devs)):
-            print '%d. %s' % (i + 1, devs[i])
+            print('%d. %s' % (i + 1, devs[i]))
         dev = readinput.call('Choose device: ', '-l', str(devs))
         if dev.isdigit() and int(dev) > 0 and int(dev) <= len(devs):
             dev = devs[int(dev) - 1]
