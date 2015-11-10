@@ -122,7 +122,7 @@ class ADBLog(threading.Thread):
         logcatArgs = ['-v', 'long']
 
         logCount = 0
-        dump = cStringIO.StringIO(adb.call(['logcat', '-d'] + logcatArgs))
+        dump = StringIO(adb.call(['logcat', '-d'] + logcatArgs))
         try:
             while True: # parse until the end of log
                 self._parseLog(dump)
